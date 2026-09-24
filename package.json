@@ -1,0 +1,31 @@
+{
+  "name": "claude-auto-code-review",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Claude Auto Code Review is a GitHub Action that runs incremental pull request reviews with Claude Code, authenticated with a Claude subscription OAuth token and the workflow GITHUB_TOKEN (no GitHub App needed).",
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint scripts/ test/",
+    "lint:fix": "eslint scripts/ test/ --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iandis/claude-auto-code-review.git"
+  },
+  "keywords": [
+    "github-action",
+    "code-review",
+    "claude",
+    "claude-code",
+    "anthropic",
+    "ai"
+  ],
+  "author": "Iandi Santulus",
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.2.1",
+    "jest": "^30.3.0"
+  }
+}

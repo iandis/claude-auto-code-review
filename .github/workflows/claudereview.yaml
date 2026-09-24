@@ -1,0 +1,34 @@
+name: Claude PR review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Claude Auto Code Review
+        uses: iandis/claude-auto-code-review@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          # Optional
+          # model: 'claude-opus-5-5'
+          # effort: 'high'
+          # max_turns: '50'
+          # include_extensions: '.js,.ts'
+          # exclude_paths: 'test/,docs/'
+          # review_rules_file: '.github/review-rules.md'
+          # fail_action_if_review_failed: 'true'
