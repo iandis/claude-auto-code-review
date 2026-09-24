@@ -83,7 +83,7 @@ runs:
 
     - name: Check out PR head
       if: steps.prepare.outputs.skip == 'false' && inputs.checkout == 'true'
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         ref: ${{ steps.prepare.outputs.head_sha }}
         fetch-depth: 1
