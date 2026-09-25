@@ -73,7 +73,7 @@ runs:
   steps:
     - name: Select files to review
       id: prepare
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       env:
         INCLUDE_EXTENSIONS: ${{ inputs.include_extensions }}
         EXCLUDE_EXTENSIONS: ${{ inputs.exclude_extensions }}
@@ -123,7 +123,7 @@ runs:
     - name: Post review summary
       id: summary
       if: steps.prepare.outputs.skip == 'false'
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       env:
         HEAD_SHA: ${{ steps.prepare.outputs.head_sha }}
         PULL_NUMBER: ${{ steps.prepare.outputs.pull_number }}
