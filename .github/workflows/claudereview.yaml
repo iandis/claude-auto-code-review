@@ -31,4 +31,4 @@ jobs:
           # include_extensions: '.js,.ts'
           # exclude_paths: 'test/,docs/'
           # review_rules_file: '.github/review-rules.md'
-          # fail_action_if_review_failed: 'true'
+          # fail_action_if_review_failed: 'false'

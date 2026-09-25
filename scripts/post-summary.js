@@ -31,7 +31,7 @@ async function run({ github, context, core }) {
     await github.rest.issues.createComment({
         owner,
         repo,
-        issue_number: context.payload.pull_request.number,
+        issue_number: Number(env.PULL_NUMBER),
         body: `${REVIEW_COMMENT_PREFIX}${env.HEAD_SHA}${SUMMARY_SEPARATOR}${summary}`
     });
 

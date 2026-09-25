@@ -21,6 +21,15 @@ const MAX_TOTAL_PATCH_CHARS = 60_000;
 // limits a single environment string to 128KB (MAX_ARG_STRLEN), so stay well below that.
 const MAX_PROMPT_BYTES = 100 * 1024;
 
+// GitHub's "List pull request files" API returns at most this many files
+const MAX_PR_FILES = 3000;
+
+// GitHub's "Compare two commits" API lists at most this many changed files
+const MAX_COMPARE_FILES = 300;
+
+// Hidden marker in the "PR too large" comment, so it is posted only once per PR
+const TOO_LARGE_COMMENT_MARKER = "<!-- claude-auto-code-review:too-large -->";
+
 // Login that posts comments when the action runs with the default GITHUB_TOKEN
 const DEFAULT_BOT_LOGIN = "github-actions[bot]";
 
@@ -31,5 +40,8 @@ module.exports = {
     MAX_PATCH_CHARS,
     MAX_TOTAL_PATCH_CHARS,
     MAX_PROMPT_BYTES,
+    MAX_PR_FILES,
+    MAX_COMPARE_FILES,
+    TOO_LARGE_COMMENT_MARKER,
     DEFAULT_BOT_LOGIN
 };

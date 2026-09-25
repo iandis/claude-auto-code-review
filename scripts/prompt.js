@@ -2,6 +2,17 @@ const { MAX_PATCH_CHARS, MAX_TOTAL_PATCH_CHARS, MAX_PROMPT_BYTES } = require("./
 
 const TRUNCATED_NOTE = "[patch truncated - read the file for full context]";
 
+class PromptTooLargeError extends Error {
+    constructor(fileCount) {
+        super(
+            `Review prompt is too large (${fileCount} files). ` +
+            "Narrow the review with include_extensions, include_paths, exclude_extensions or exclude_paths."
+        );
+        this.name = "PromptTooLargeError";
+        this.fileCount = fileCount;
+    }
+}
+
 /**
  * Reduces GitHub PR file objects to the fields Claude needs and keeps the embedded patches
  * within the per-file and total budgets. Files whose patch does not fit are marked so Claude
@@ -32,8 +43,11 @@ function simplifyFiles(files, { maxPatchChars = MAX_PATCH_CHARS, maxTotalChars =
     });
 }
 
-function renderPrompt({ owner, repo, pullNumber, headSha, baseSha, incrementalSince, files, reviewRules }, budgets) {
-    const scope = incrementalSince
+function renderPrompt({ owner, repo, pullNumber, headSha, baseSha, incrementalSince, fullReview, files, reviewRules }, budgets) {
+    const scope = fullReview
+        ? "This is a full on-demand review of this pull request. The list below contains every file in the PR diff that needs review, " +
+          "regardless of any previous review."
+        : incrementalSince
         ? `This is an INCREMENTAL review. A previous review covered the PR up to commit ${incrementalSince}. ` +
           `The list below contains only the PR files that changed since then. The patches still show each file's full PR diff; ` +
           `focus on what changed since ${incrementalSince} and do not repeat issues that were likely already reported.`
@@ -109,10 +123,7 @@ function buildPrompt(params, { maxPromptBytes = MAX_PROMPT_BYTES } = {}) {
         return prompt;
     }
 
-    throw new Error(
-        `Review prompt is too large (${params.files.length} files). ` +
-        "Narrow the review with include_extensions, include_paths, exclude_extensions or exclude_paths."
-    );
+    throw new PromptTooLargeError(params.files.length);
 }
 
-module.exports = { buildPrompt, simplifyFiles, TRUNCATED_NOTE };
+module.exports = { buildPrompt, simplifyFiles, TRUNCATED_NOTE, PromptTooLargeError };

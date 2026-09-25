@@ -6,8 +6,11 @@ branding:
 
 inputs:
   claude_code_oauth_token:
-    description: 'Claude Code OAuth token generated with `claude setup-token` (store it as a secret)'
-    required: true
+    description: 'Claude Code OAuth token generated with `claude setup-token` (store it as a secret). Either this or `anthropic_api_key` is required; `anthropic_api_key` takes precedence when both are set.'
+    required: false
+  anthropic_api_key:
+    description: 'Claude API key from the Claude Console (store it as a secret). Use instead of `claude_code_oauth_token`; recommended for shared/org use. Takes precedence when both are set.'
+    required: false
   github_token:
     description: 'GitHub token used to read the PR and post comments. Defaults to the workflow GITHUB_TOKEN, so the Claude GitHub App is not needed.'
     required: false
@@ -39,12 +42,16 @@ inputs:
     description: 'Path to a file with custom review rules added to the prompt. Read from the PR base branch.'
     required: false
   fail_action_if_review_failed:
-    description: 'If set to true, the action fails when the review process fails'
+    description: 'If set to true, the action fails when the review process fails (setup error, Claude step failure, missing summary). Review findings never fail the action.'
     required: false
-    default: 'false'
+    default: 'true'
   allowed_bots:
     description: 'Comma-separated bot usernames whose PRs may be reviewed (e.g., "dependabot[bot]"), or "*" for all bots'
     required: false
+  full_review:
+    description: 'Review every file in the PR diff, ignoring the previous-review marker. Useful for on-demand reviews.'
+    required: false
+    default: 'false'
   checkout:
     description: 'Check out the PR head (shallow) so Claude can read code for context. Set to false if the workflow already checks out the PR head.'
     required: false
@@ -74,6 +81,10 @@ runs:
         EXCLUDE_PATHS: ${{ inputs.exclude_paths }}
         REVIEW_RULES_FILE: ${{ inputs.review_rules_file }}
         FAIL_ACTION_IF_REVIEW_FAILED: ${{ inputs.fail_action_if_review_failed }}
+        FULL_REVIEW: ${{ inputs.full_review }}
+        # Only whether each credential is set; the secrets themselves never reach the script
+        HAS_OAUTH_TOKEN: ${{ inputs.claude_code_oauth_token != '' }}
+        HAS_API_KEY: ${{ inputs.anthropic_api_key != '' }}
         # GITHUB_ACTION_PATH points at github-script itself inside this step
         ACTION_PATH: ${{ github.action_path }}
       with:
@@ -95,7 +106,9 @@ runs:
       continue-on-error: true
       uses: anthropics/claude-code-action@v1
       with:
-        claude_code_oauth_token: ${{ inputs.claude_code_oauth_token }}
+        anthropic_api_key: ${{ inputs.anthropic_api_key }}
+        # The API key takes precedence, so the OAuth token is only passed on without one
+        claude_code_oauth_token: ${{ inputs.anthropic_api_key == '' && inputs.claude_code_oauth_token || '' }}
         github_token: ${{ inputs.github_token }}
         allowed_bots: ${{ inputs.allowed_bots }}
         prompt: ${{ steps.prepare.outputs.prompt }}
@@ -113,6 +126,7 @@ runs:
       uses: actions/github-script@v8
       env:
         HEAD_SHA: ${{ steps.prepare.outputs.head_sha }}
+        PULL_NUMBER: ${{ steps.prepare.outputs.pull_number }}
         REVIEW_OUTCOME: ${{ steps.claude.outcome }}
         REVIEW_CONCLUSION: ${{ steps.claude.outputs.conclusion }}
         STRUCTURED_OUTPUT: ${{ steps.claude.outputs.structured_output }}
